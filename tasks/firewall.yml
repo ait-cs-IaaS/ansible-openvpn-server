@@ -1,0 +1,15 @@
+- name: OpenVPN | Firewall | Write iptables rules file
+  become: yes
+  template:
+    src: "{{ openvpn_server_iptables_config_template }}"
+    dest: "{{ openvpn_server_iptables_rules }}"
+    owner: root
+    group: root
+    mode: 0744
+  when: openvpn_server_load_iptables_rules
+
+- name: OpenVPN | Firewall | Load iptables rules
+  become: yes
+  command: "{{ openvpn_server_iptables_rules }}"
+  when: openvpn_server_load_iptables_rules
+  changed_when: false

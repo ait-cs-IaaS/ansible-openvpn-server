@@ -1,0 +1,62 @@
+---
+# defaults file for openvpn-server
+required_packages:
+  - gnupg
+  - iptables
+  - openssl
+  - openvpn
+
+# `proto` and `port` where OpenVPN will listen at.
+# `mask` and `cidr` refer to the subnets used for tunneling.
+# `server_extra_options` defines config options added to the OpenVPN server config,
+#  e.g. `push ...` or `client-to-client`.
+openvpn_server_instances:
+  - proto: udp
+    port: 1194
+    mask: "10.9.0.0 255.255.255.0"
+    cidr: "10.9.0.0/24"
+    server_extra_options: ['push "redirect-gateway def1"']
+
+
+openvpn_server_tls_auth: no
+openvpn_server_auth: no
+openvpn_server_crl_verify: no
+
+openvpn_server_verbosity: 0
+
+openvpn_server_path: "/etc/openvpn"
+openvpn_server_public_path: "{{ openvpn_server_path }}/server"
+openvpn_server_private_path: "{{ openvpn_server_path }}/private"
+
+
+openvpn_server_ta_key: "{{ openvpn_server_private_path }}/ta.key"
+openvpn_server_ca_cert: "{{ openvpn_server_public_path }}/ca.crt"
+openvpn_server_cert: "{{ openvpn_server_public_path }}/server.crt"
+openvpn_server_key: "{{ openvpn_server_private_path }}/server.key"
+
+openvpn_server_dhparams_size: "{{ openvpn_server_key_size }}"
+openvpn_server_dhparams_location: "{{ openvpn_server_private_path }}/dh.pem"
+
+openvpn_server_crl: "{{ openvpn_server_private_path }}/crl.pem"
+openvpn_server_common_name_file: "{{ openvpn_server_public_path }}/openvpn_server_common_name"
+
+openvpn_server_key_size: "2048"
+openvpn_server_cipher: "AES-256-CBC"
+openvpn_server_data_ciphers: "{{ openvpn_server_cipher }}"
+openvpn_server_auth_digest: "SHA256"
+# For all available ciphers use: openvpn --show-tls
+# For all available PFS ciphers (without eliptic curve cryptography) use: openvpn --show-tls | grep -e "-DHE-"
+# Configuration here just uses PFS ciphers leveraging AES256 and at least SHA256
+openvpn_server_tls_cipher: "TLS-DHE-DSS-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-DSS-WITH-AES-256-CBC-SHA256"
+
+
+# Whether the install.yml playbook will load iptables rules.
+# If set to false you have to apply them yourself. See README section "Firewall".
+openvpn_server_load_iptables_rules: false
+openvpn_server_iptables_path: "/sbin/iptables"
+
+openvpn_server_iptables_rules: "{{ openvpn_server_path }}/openvpn_iptables_rules.sh"
+
+
+openvpn_server_config_template: openvpn_server.conf.j2
+openvpn_server_iptables_config_template: iptables_rules.v4.j2

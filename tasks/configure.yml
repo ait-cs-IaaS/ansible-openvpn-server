@@ -1,0 +1,108 @@
+---
+
+- name: OpenVPN | sysctl | Enable IPv4 traffic forwarding
+  become: yes
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+
+- name: Ensure OpenVPN config dir exists
+  become: yes
+  file:
+    name: "{{ openvpn_server_path }}"
+    state: directory
+
+- name: Ensure OpenVPN server dir exists
+  become: yes
+  file:
+    name: "{{ openvpn_server_public_path }}"
+    state: directory
+
+- name: Ensure OpenVPN private config dir exists
+  become: yes
+  file:
+    name: "{{ openvpn_server_private_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+  
+- name: OpenVPN | Configuration | Build ta.key
+  become: yes
+  shell: openvpn --genkey --secret {{ openvpn_server_ta_key }}
+  args:
+    creates: "{{ openvpn_server_ta_key }}"
+  notify:
+    - restart openvpn
+
+- name: OpenVPN | Configuration | Fix dh.pem permissions
+  become: yes
+  file:
+    path: "{{ openvpn_server_ta_key }}"
+    state: file
+    owner: root
+    group: root
+    mode: 0600
+  notify:
+    - restart openvpn
+
+- name: OpenVPN | Configuration | Build dh.pem
+  become: yes
+  shell: openssl dhparam -out {{ openvpn_server_dhparams_location }} {{ openvpn_server_dhparams_size }}
+  args:
+    creates: "{{ openvpn_server_dhparams_location }}"
+  notify:
+    - restart openvpn
+
+- name: OpenVPN | Configuration | Fix dh.pem permissions
+  become: yes
+  file:
+    path: "{{ openvpn_server_dhparams_location }}"
+    state: file
+    owner: root
+    group: root
+    mode: 0600
+  notify:
+    - restart openvpn
+
+- name: OpenVPN | Configuration | Copy certs
+  become: yes
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - src: "{{ openvpn_server_ca_cert_src }}"
+      dest: "{{ openvpn_server_ca_cert }}"
+    - src: "{{ openvpn_server_cert_src }}"
+      dest: "{{ openvpn_server_cert }}"
+  notify:
+    - restart openvpn
+
+- name: OpenVPN | Configuration | Copy server cert key
+  become: yes
+  copy:
+    src: "{{ openvpn_server_key_src }}"
+    dest: "{{ openvpn_server_key }}"
+    owner: root
+    group: root
+    mode: 0600
+  notify:
+    - restart openvpn
+
+- name: OpenVPN | Configuration | Copy OpenVPN server configuration files into place
+  become: yes
+  template:
+    src: "{{ openvpn_server_config_template }}"
+    dest: "{{ openvpn_server_path }}/{{ item.proto }}-{{ item.port }}.conf"
+  with_items: "{{ openvpn_server_instances }}"
+  notify:
+    - restart openvpn
+
+- name: OpenVPN | systemd | Enable services
+  become: yes
+  service:
+    name: "openvpn@{{ item.proto }}-{{ item.port }}.service"
+    enabled: true
+  loop: "{{ openvpn_server_instances }}"
+  notify:
+    - restart openvpn

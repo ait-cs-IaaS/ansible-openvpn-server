@@ -1,0 +1,48 @@
+---
+# tasks file for openvpn-server
+
+- name: OpenVPN | package | Ensure the APT cache is up to date
+  become: yes
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  changed_when: False
+
+- name: OpenVPN | package | Install pre install packages
+  become: yes
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ openvpn_server_pre_packages }}"
+  register: install_specific_result
+  until: install_specific_result is success
+  retries: 5
+  delay: 5
+
+- name: OpenVPN | package | Add the official OpenVPN APT key
+  become: yes
+  apt_key:
+    url: https://swupdate.openvpn.net/repos/repo-public.gpg
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: OpenVPN | package | Add the official OpenVPN repository
+  become: yes
+  apt_repository:
+    repo: 'deb https://build.openvpn.net/debian/openvpn/stable {{ ansible_lsb.codename }} main'
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: OpenVPN | package | Install required packages
+  become: yes
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ required_packages }}"
+  register: install_required_result
+  until: install_required_result is success
+  retries: 5
+  delay: 5
+  tags:
+    - skip_ansible_lint

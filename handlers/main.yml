@@ -1,0 +1,9 @@
+---
+# handlers file for openvpn-server
+
+- name: restart openvpn
+  become: yes
+  service:
+    name: "openvpn@{{ item.proto }}-{{ item.port }}.service"
+    state: restarted
+  loop: "{{ openvpn_server_instances }}"
