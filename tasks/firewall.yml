@@ -27,4 +27,7 @@
     state: restored
     path: "{{ openvpn_server_iptables_rules }}"
     noflush: "{{ openvpn_server_iptables_noflush }}"
+  # need to set async and poll to be able to rollback in case of erro
+  async: "{{ ansible_timeout }}"
+  poll: 0
   when: openvpn_server_load_iptables_rules
