@@ -13,6 +13,7 @@
 -A POSTROUTING -s {{ instance.cidr }} -o {{ ansible_default_ipv4.interface }} -j MASQUERADE
 {% endfor %}
 COMMIT
+# Completed
 
 *filter
 :INPUT {{ openvpn_server_iptables_filter_input | upper }} [0:0]
@@ -32,3 +33,4 @@ COMMIT
 -A INPUT -p tcp -d {{ instance.cidr }} --dport {{ ansible_port | default('22') }} -j ACCEPT
 {% endfor %}
 COMMIT
+# Completed
