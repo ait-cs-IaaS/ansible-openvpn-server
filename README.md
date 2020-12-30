@@ -37,6 +37,7 @@ Role Variables
 | &nbsp;&nbsp;&nbsp;&nbsp;∟.proto                | str        | udp                                                   | The protocol to use (udp/tcp)                                                  |
 | &nbsp;&nbsp;&nbsp;&nbsp;∟.port                 | int        | 1194                                                  | The port to bind to                                                            |
 | &nbsp;&nbsp;&nbsp;&nbsp;∟.mask                 | str        | 10.9.0.0 255.255.255.0                                | The network mask for the tunnel                                                |
+| &nbsp;&nbsp;&nbsp;&nbsp;∟.cidr                 | str        | 10.9.0.0/24                                | The network mask for the tunnel                                                |
 | &nbsp;&nbsp;&nbsp;&nbsp;∟.server_extra_options | list[str]  | ['push "redirect-gateway def1"']                      | Extra options for the instance                                                 |
 | openvpn_server_load_iptables_rules             | bool       | no                                                    | If the role should configure iptables or not                                   |
 | openvpn_server_iptables_noflush                | bool       | no                                                    | If the iptables rules should be appended to or overwrite the current rules\*\* |

@@ -49,6 +49,7 @@ openvpn_server_instances:
   - proto: udp
     port: 1194
     mask: "10.9.0.0 255.255.255.0"
+    cidr: "10.9.0.0/24"
     server_extra_options: ['push "redirect-gateway def1"']
 
 
