@@ -1,4 +1,8 @@
 ---
+# template files 
+openvpn_server_config_template: openvpn_server.conf.j2
+openvpn_server_iptables_config_template: openvpn_iptables_rules.v4.j2
+
 # defaults file for openvpn-server
 required_packages:
   - gnupg
@@ -34,13 +38,12 @@ openvpn_server_ca_cert: "{{ openvpn_server_public_path }}/ca.crt"
 openvpn_server_cert: "{{ openvpn_server_public_path }}/server.crt"
 openvpn_server_key: "{{ openvpn_server_private_path }}/server.key"
 
-openvpn_server_dhparams_size: "{{ openvpn_server_key_size }}"
+openvpn_server_dhparams_size: "2048"
 openvpn_server_dhparams_location: "{{ openvpn_server_private_path }}/dh.pem"
 
 openvpn_server_crl: "{{ openvpn_server_private_path }}/crl.pem"
 openvpn_server_common_name_file: "{{ openvpn_server_public_path }}/openvpn_server_common_name"
 
-openvpn_server_key_size: "2048"
 openvpn_server_cipher: "AES-256-CBC"
 openvpn_server_data_ciphers: "{{ openvpn_server_cipher }}"
 openvpn_server_auth_digest: "SHA256"
@@ -50,13 +53,26 @@ openvpn_server_auth_digest: "SHA256"
 openvpn_server_tls_cipher: "TLS-DHE-DSS-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-DSS-WITH-AES-256-CBC-SHA256"
 
 
-# Whether the install.yml playbook will load iptables rules.
-# If set to false you have to apply them yourself. See README section "Firewall".
+# Whether the firewall.yml playbook will load iptables rules.
 openvpn_server_load_iptables_rules: false
 openvpn_server_iptables_path: "/sbin/iptables"
 
-openvpn_server_iptables_rules: "{{ openvpn_server_path }}/openvpn_iptables_rules.sh"
+openvpn_server_iptables_rules: "{{ openvpn_server_path }}/openvpn_iptables_rules.v4"
+openvpn_server_iptables_backup: "{{ openvpn_server_path }}/iptables_rules_backup.v4"
 
 
-openvpn_server_config_template: openvpn_server.conf.j2
-openvpn_server_iptables_config_template: iptables_rules.v4.j2
+# if set to true the iptables rules are appended to the current rules 
+# if set to false old rules are deleted and only the rules from the restore file are applied
+# (Note default chain policies are always set)
+openvpn_server_iptables_noflush: no
+
+# nat chain policies
+openvpn_server_iptables_nat_prerouting: ACCEPT
+openvpn_server_iptables_nat_input: ACCEPT
+openvpn_server_iptables_nat_output: ACCEPT
+openvpn_server_iptables_nat_postrouting: ACCEPT
+
+# filter chain policies
+openvpn_server_iptables_filter_input: ACCEPT
+openvpn_server_iptables_filter_forward: ACCEPT
+openvpn_server_iptables_filter_output: ACCEPT

@@ -1,15 +1,30 @@
+
+- name: OpenVPN | Firewall | Check if restore backup file exist
+  become: yes
+  stat: 
+    path: "{{ openvpn_server_iptables_backup }}"
+  register: restore_back_file
+
+- name: OpenVPN | Firewall | Save current iptables as backup
+  become: yes
+  community.general.iptables_state:
+    state: saved
+    path: "{{ openvpn_server_iptables_backup }}"
+  when: 
+    - restore_back_file.stat.exists == false
+    # ensures our backup is from right before we applied our OpenVPN rules
+    - openvpn_server_load_iptables_rules 
+
 - name: OpenVPN | Firewall | Write iptables rules file
   become: yes
   template:
     src: "{{ openvpn_server_iptables_config_template }}"
     dest: "{{ openvpn_server_iptables_rules }}"
-    owner: root
-    group: root
-    mode: 0744
-  when: openvpn_server_load_iptables_rules
 
 - name: OpenVPN | Firewall | Load iptables rules
   become: yes
-  command: "{{ openvpn_server_iptables_rules }}"
+  community.general.iptables_state:
+    state: restored
+    path: "{{ openvpn_server_iptables_rules }}"
+    noflush: "{{ openvpn_server_iptables_noflush }}"
   when: openvpn_server_load_iptables_rules
-  changed_when: false
