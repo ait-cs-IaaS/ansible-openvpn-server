@@ -1,7 +1,14 @@
 ---
 # vars file for openvpn-server
+
 openvpn_server_pre_packages:
   # Make sure https repos can be added (needed for OpenVPN repo)
   - apt-transport-https
   - ca-certificates
   - software-properties-common
+
+required_packages:
+  - gnupg
+  - iptables
+  - openssl
+  - openvpn
